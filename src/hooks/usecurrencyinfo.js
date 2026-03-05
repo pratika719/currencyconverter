@@ -1,18 +1,39 @@
+import { useEffect, useState } from "react";
 
-import {useEffect,useState} from 'react'
+function useCurrencyInfo(currency) {
+  const [data, setData] = useState({});
 
-function useCurrencyInfo(currency){
-    const [data,setData]=usestate({})
-    useEffect(()=>{
-        fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/${currency}.json`)
-   .then((res)=>res.json()).then(res=>setData(res[currency]))
-console.log(data);
+  useEffect(() => {
+    if (!currency) return;
 
+    const primaryURL = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${currency}.json`;
+    const fallbackURL = `https://latest.currency-api.pages.dev/v1/currencies/${currency}.json`;
 
+    fetch(primaryURL)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Primary failed");
+        }
+        return res.json();
+      })
+      .then((res) => {
+        setData(res[currency]);
+      })
+      .catch(() => {
+        // Try fallback if primary fails
+        fetch(fallbackURL)
+          .then((res) => res.json())
+          .then((res) => {
+            setData(res[currency]);
+          })
+          .catch(() => {
+            setData({});
+          });
+      });
 
-},[currency])
+  }, [currency]);
 
-return data
+  return data;
 }
 
 export default useCurrencyInfo;
